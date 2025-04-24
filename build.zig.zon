@@ -8,7 +8,10 @@
             .url = "git+https://github.com/tardy-org/tardy?ref=v0.3.0#cd454060f3b6006368d53c05ab96cd16c73c34de",
             .hash = "tardy-0.3.0-69wrgi7PAwDFhO7m0aXae6N15s2b28VIOrnRrSHHake6",
         },
-        .bearssl = .{ .path = "vendor/bearssl" },
+        .bearssl = .{
+            .path = "vendor/bearssl",
+            .lazy = true
+        },
     },
     .paths = .{
         "build.zig",

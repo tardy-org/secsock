@@ -9,20 +9,21 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     }).module("tardy");
 
-    const bearssl = b.dependency("bearssl", .{
-        .target = target,
-        .optimize = optimize,
-        .BR_LE_UNALIGNED = false,
-        .BR_BE_UNALIGNED = false,
-    }).artifact("bearssl");
-
     const lib = b.addModule("secsock", .{
         .root_source_file = b.path("src/lib.zig"),
         .target = target,
         .optimize = optimize,
     });
 
-    lib.linkLibrary(bearssl);
+    if (b.lazyDependency("bearssl", .{
+        .target = target,
+        .optimize = optimize,
+        .BR_LE_UNALIGNED = false,
+        .BR_BE_UNALIGNED = false,
+    })) |bearssl| {
+        lib.linkLibrary(bearssl.artifact("bearssl"));
+    }
+
     lib.addImport("tardy", tardy);
 
     // add_example(b, "s2n", target, optimize, tardy, lib);

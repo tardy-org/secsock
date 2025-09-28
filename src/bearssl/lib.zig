@@ -9,9 +9,7 @@ const SecureSocket = @import("../lib.zig").SecureSocket;
 
 const log = std.log.scoped(.bearssl);
 
-const c = @cImport({
-    @cInclude("bearssl.h");
-});
+const c = @import("bearssl_h");
 
 pub const EngineStatus = enum {
     Ok,

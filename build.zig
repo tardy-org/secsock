@@ -14,7 +14,14 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .BR_LE_UNALIGNED = false,
         .BR_BE_UNALIGNED = false,
-    }).artifact("bearssl");
+    });
+
+    const bearssl_h = b.addTranslateC(.{
+        .optimize = optimize,
+        .target = target,
+        .link_libc = true,
+        .root_source_file = bearssl.path("zig-out/include/bearssl.h"),
+    }).createModule();
 
     const lib = b.addModule("secsock", .{
         .root_source_file = b.path("src/lib.zig"),
@@ -22,7 +29,8 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    lib.linkLibrary(bearssl);
+    lib.linkLibrary(bearssl.artifact("bearssl"));
+    lib.addImport("bearssl_h", bearssl_h);
     lib.addImport("tardy", tardy);
 
     // add_example(b, "s2n", target, optimize, tardy, lib);

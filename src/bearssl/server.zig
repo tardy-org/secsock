@@ -12,9 +12,7 @@ const EngineStatus = @import("lib.zig").EngineStatus;
 
 const log = std.log.scoped(.@"bearssl/server");
 
-const c = @cImport({
-    @cInclude("bearssl.h");
-});
+const c = @import("bearssl_h");
 
 pub fn to_secure_socket_server(self: *BearSSL, socket: Socket) !SecureSocket {
     const CallbackContext = struct { socket: Socket, runtime: ?*Runtime };
@@ -45,24 +43,19 @@ pub fn to_secure_socket_server(self: *BearSSL, socket: Socket) !SecureSocket {
         .sslio_ctx = undefined,
     };
 
-    // Create a temporary array for the certificate chain
-    const x509_cert = self.x509.?;
-    var cert_array: [1]c.br_x509_certificate = undefined;
-    @memcpy(@as([*]u8, @ptrCast(&cert_array[0]))[0..@sizeOf(c.br_x509_certificate)], @as([*]const u8, @ptrCast(&x509_cert))[0..@sizeOf(c.br_x509_certificate)]);
-
     switch (self.pkey.?) {
         .rsa => |*inner| c.br_ssl_server_init_full_rsa(
             &context.context,
-            &cert_array,
+            @ptrCast(&self.x509.?),
             1,
-            @as([*c]const c.br_rsa_private_key, @ptrCast(inner)),
+            @ptrCast(inner),
         ),
         .ec => |*inner| c.br_ssl_server_init_full_ec(
             &context.context,
-            &cert_array,
+            @ptrCast(&self.x509.?),
             1,
             @intCast(self.cert_signer_algo.?),
-            @as([*c]const c.br_ec_private_key, @ptrCast(inner)),
+            @ptrCast(inner),
         ),
     }
 

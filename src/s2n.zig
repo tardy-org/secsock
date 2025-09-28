@@ -8,9 +8,7 @@ const SecureSocket = @import("lib.zig").SecureSocket;
 
 const log = std.log.scoped(.s2n);
 
-const c = @cImport({
-    @cInclude("s2n.h");
-});
+const c = @import("s2n_h");
 
 var initalized: bool = false;
 var deinitalized: bool = false;
@@ -106,7 +104,7 @@ pub const s2n = struct {
         try handle_error("setting send cb ctx", set_send_ctx_rc);
 
         const set_recv_cb_rc = c.s2n_connection_set_recv_cb(conn, struct {
-            fn recv_cb(context: ?*anyopaque, buf: [*c]u8, len: u32) callconv(.C) c_int {
+            fn recv_cb(context: ?*anyopaque, buf: [*c]u8, len: u32) callconv(.c) c_int {
                 const ctx: *CallbackContext = @ptrCast(@alignCast(context.?));
                 const sock = ctx.socket;
                 const runtime = ctx.runtime;
@@ -126,7 +124,7 @@ pub const s2n = struct {
         try handle_error("setting recv cb", set_recv_cb_rc);
 
         const set_send_cb_rc = c.s2n_connection_set_send_cb(conn, struct {
-            fn send_cb(context: ?*anyopaque, buf: [*c]const u8, len: u32) callconv(.C) c_int {
+            fn send_cb(context: ?*anyopaque, buf: [*c]const u8, len: u32) callconv(.c) c_int {
                 const ctx: *CallbackContext = @ptrCast(@alignCast(context.?));
                 const sock = ctx.socket;
                 const runtime = ctx.runtime;

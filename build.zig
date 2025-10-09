@@ -33,16 +33,18 @@ fn add_example(
     b: *std.Build,
     name: []const u8,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.Mode,
+    optimize: std.builtin.OptimizeMode,
     tardy_module: *std.Build.Module,
     secsock_module: *std.Build.Module,
 ) void {
     const example = b.addExecutable(.{
-        .name = b.fmt("{s}", .{name}),
-        .root_source_file = b.path(b.fmt("examples/{s}/main.zig", .{name})),
-        .target = target,
-        .optimize = optimize,
-        .strip = false,
+        .name = name,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path(b.fmt("./examples/{s}/main.zig", .{name})),
+            .target = target,
+            .optimize = optimize,
+            .strip = false,
+        }),
     });
 
     if (target.result.os.tag == .windows) {

@@ -11,10 +11,10 @@ pub fn build(b: *std.Build) !void {
         .optimize = optimize,
     });
 
-    var macro_list = std.ArrayList(MacroPair).init(b.allocator);
-    defer macro_list.deinit();
+    var macro_list: std.ArrayList(MacroPair) = .empty;
+    defer macro_list.deinit(b.allocator);
     {
-        try macro_list.append(.{
+        try macro_list.append(b.allocator, .{
             .mode = b.option(
                 bool,
                 "BR_64",
@@ -23,7 +23,7 @@ pub fn build(b: *std.Build) !void {
             .name = "BR_64",
         });
 
-        try macro_list.append(.{
+        try macro_list.append(b.allocator, .{
             .mode = b.option(
                 bool,
                 "BR_LOWMUL",
@@ -32,7 +32,7 @@ pub fn build(b: *std.Build) !void {
             .name = "BR_LOWMUL",
         });
 
-        try macro_list.append(.{
+        try macro_list.append(b.allocator, .{
             .mode = b.option(
                 bool,
                 "BR_SLOW_MUL",
@@ -41,7 +41,7 @@ pub fn build(b: *std.Build) !void {
             .name = "BR_SLOW_MUL",
         });
 
-        try macro_list.append(.{
+        try macro_list.append(b.allocator, .{
             .mode = b.option(
                 bool,
                 "BR_SLOW_MUL15",
@@ -50,7 +50,7 @@ pub fn build(b: *std.Build) !void {
             .name = "BR_SLOW_MUL15",
         });
 
-        try macro_list.append(.{
+        try macro_list.append(b.allocator, .{
             .mode = b.option(
                 bool,
                 "BR_CT_MUL31",
@@ -59,7 +59,7 @@ pub fn build(b: *std.Build) !void {
             .name = "BR_CT_MUL31",
         });
 
-        try macro_list.append(.{
+        try macro_list.append(b.allocator, .{
             .mode = b.option(
                 bool,
                 "BR_CT_MUL15",
@@ -68,7 +68,7 @@ pub fn build(b: *std.Build) !void {
             .name = "BR_CT_MUL15",
         });
 
-        try macro_list.append(.{
+        try macro_list.append(b.allocator, .{
             .mode = b.option(
                 bool,
                 "BR_NO_ARITH_SHIFT",
@@ -77,7 +77,7 @@ pub fn build(b: *std.Build) !void {
             .name = "BR_NO_ARITH_SHIFT",
         });
 
-        try macro_list.append(.{
+        try macro_list.append(b.allocator, .{
             .mode = b.option(
                 bool,
                 "BR_RDRAND",
@@ -86,7 +86,7 @@ pub fn build(b: *std.Build) !void {
             .name = "BR_RDRAND",
         });
 
-        try macro_list.append(.{
+        try macro_list.append(b.allocator, .{
             .mode = b.option(
                 bool,
                 "BR_USE_RANDOM",
@@ -95,7 +95,7 @@ pub fn build(b: *std.Build) !void {
             .name = "BR_USE_RANDOM",
         });
 
-        try macro_list.append(.{
+        try macro_list.append(b.allocator, .{
             .mode = b.option(
                 bool,
                 "BR_USE_WIN32_RAND",
@@ -104,7 +104,7 @@ pub fn build(b: *std.Build) !void {
             .name = "BR_USE_WIN32_RAND",
         });
 
-        try macro_list.append(.{
+        try macro_list.append(b.allocator, .{
             .mode = b.option(
                 bool,
                 "BR_USE_UNIX_TIME",
@@ -113,7 +113,7 @@ pub fn build(b: *std.Build) !void {
             .name = "BR_USE_UNIX_TIME",
         });
 
-        try macro_list.append(.{
+        try macro_list.append(b.allocator, .{
             .mode = b.option(
                 bool,
                 "BR_USE_WIN32_TIME",
@@ -122,7 +122,7 @@ pub fn build(b: *std.Build) !void {
             .name = "BR_USE_WIN32_TIME",
         });
 
-        try macro_list.append(.{
+        try macro_list.append(b.allocator, .{
             .mode = b.option(
                 bool,
                 "BR_ARMEL_CORTEXM_GCC",
@@ -131,7 +131,7 @@ pub fn build(b: *std.Build) !void {
             .name = "BR_ARMEL_CORTEXM_GCC",
         });
 
-        try macro_list.append(.{
+        try macro_list.append(b.allocator, .{
             .mode = b.option(
                 bool,
                 "BR_AES_X86NI",
@@ -140,7 +140,7 @@ pub fn build(b: *std.Build) !void {
             .name = "BR_AES_X86NI",
         });
 
-        try macro_list.append(.{
+        try macro_list.append(b.allocator, .{
             .mode = b.option(
                 bool,
                 "BR_SSE2",
@@ -149,7 +149,7 @@ pub fn build(b: *std.Build) !void {
             .name = "BR_SSE2",
         });
 
-        try macro_list.append(.{
+        try macro_list.append(b.allocator, .{
             .mode = b.option(
                 bool,
                 "BR_POWER8",
@@ -158,7 +158,7 @@ pub fn build(b: *std.Build) !void {
             .name = "BR_POWER8",
         });
 
-        try macro_list.append(.{
+        try macro_list.append(b.allocator, .{
             .mode = b.option(
                 bool,
                 "BR_INT128",
@@ -167,7 +167,7 @@ pub fn build(b: *std.Build) !void {
             .name = "BR_INT128",
         });
 
-        try macro_list.append(.{
+        try macro_list.append(b.allocator, .{
             .mode = b.option(
                 bool,
                 "BR_UMUL128",
@@ -176,7 +176,7 @@ pub fn build(b: *std.Build) !void {
             .name = "BR_UMUL128",
         });
 
-        try macro_list.append(.{
+        try macro_list.append(b.allocator, .{
             .mode = b.option(
                 bool,
                 "BR_LE_UNALIGNED",
@@ -185,7 +185,7 @@ pub fn build(b: *std.Build) !void {
             .name = "BR_LE_UNALIGNED",
         });
 
-        try macro_list.append(.{
+        try macro_list.append(b.allocator, .{
             .mode = b.option(
                 bool,
                 "BR_BE_UNALIGNED",
@@ -195,10 +195,13 @@ pub fn build(b: *std.Build) !void {
         });
     }
 
-    const bearssl = b.addStaticLibrary(.{
+    const bearssl = b.addLibrary(.{
         .name = "bearssl",
-        .target = target,
-        .optimize = optimize,
+        .linkage = .static,
+        .root_module = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+        }),
     });
 
     bearssl.root_module.link_libc = true;

@@ -5,8 +5,10 @@
 
     .dependencies = .{
         .tardy = .{
-            .url = "git+https://github.com/tardy-org/tardy?ref=v0.3.0#cd454060f3b6006368d53c05ab96cd16c73c34de",
-            .hash = "tardy-0.3.0-69wrgi7PAwDFhO7m0aXae6N15s2b28VIOrnRrSHHake6",
+            //.url = "git+https://github.com/tardy-org/tardy?ref=v0.3.0#cd454060f3b6006368d53c05ab96cd16c73c34de",
+            //.hash = "tardy-0.3.0-69wrgi7PAwDFhO7m0aXae6N15s2b28VIOrnRrSHHake6",
+            .url = "git+https://github.com/221V/tardy?ref=zig-0.14#d0364f3142cb859474cd23ccc9da1c97d9dc1e05",
+            .hash = "tardy-0.3.0-zwolxXHNAwA6tH6Xr1qgUIAyHy6o4-hgOSVOlGBt6jjL",
         },
         .bearssl = .{ .path = "vendor/bearssl" },
     },

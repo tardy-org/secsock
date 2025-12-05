@@ -29,7 +29,7 @@ pub const SecureSocket = struct {
                 }.accept,
                 .connect = struct {
                     fn connect(s: Socket, r: *Runtime, _: *anyopaque) !void {
-                        try s.connect(r);
+                        _ = try s.connect(r);
                     }
                 }.connect,
                 .recv = struct {

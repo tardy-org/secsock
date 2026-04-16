@@ -1,24 +1,19 @@
 .{
     .name = .s2n_tls,
     .fingerprint = 0xef8ea117dce4699f,
-    .version = "1.5.14",
-
+    .version = "1.5.25",
     .dependencies = .{
         .s2n_tls = .{
-            .url = "https://github.com/aws/s2n-tls/archive/refs/tags/v1.5.14.tar.gz",
-            .hash = "1220e6f5989d006913e19cfd10e65f9bdbbe3680a1020d10a010c2f427c15b6296f7",
+            .url = "https://github.com/aws/s2n-tls/archive/refs/tags/v1.5.25.tar.gz",
+            .hash = "N-V-__8AAFxUUgFN1iHcWzX2mFWuPIlIe3HSO13j3NRwkAKd",
         },
         .openssl = .{
-            .url = "git+https://github.com/allyourcodebase/openssl#f348124c5382bcc377f1b3277357cbf2ed2fb8db",
-            .hash = "openssl-3.3.1-2-TC9C3Se3ZACF5WO_CjoD7Bt_X94oCsAAbbwhOp1rTZBe",
+            .url = "git+https://github.com/allyourcodebase/openssl?ref=3.3.2#cad7ccba47e42fa608ca655ec14ae33202df86e1",
+            .hash = "openssl-3.3.2-TC9C3Wa3ZACgB1hZbrLOQCK9XccIBaW_F3imFfIeYP06",
         },
     },
     .paths = .{
         "build.zig",
         "build.zig.zon",
-        "src",
-        "LICENSE",
-        "NOTICE",
-        "README.md",
     },
 }

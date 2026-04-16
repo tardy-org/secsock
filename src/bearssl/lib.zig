@@ -1,6 +1,7 @@
 const std = @import("std");
 const assert = std.debug.assert;
 
+const c = @import("bearssl_h");
 const tardy = @import("tardy");
 const Socket = tardy.Socket;
 const Runtime = tardy.Runtime;
@@ -8,10 +9,6 @@ const Runtime = tardy.Runtime;
 const SecureSocket = @import("../lib.zig").SecureSocket;
 
 const log = std.log.scoped(.bearssl);
-
-const c = @cImport({
-    @cInclude("bearssl.h");
-});
 
 pub const EngineStatus = enum {
     Ok,
@@ -128,13 +125,13 @@ pub const BearSSL = struct {
         var p_ctx: c.br_pem_decoder_context = undefined;
         c.br_pem_decoder_init(&p_ctx);
 
-        var decoded = try std.ArrayListUnmanaged(u8).initCapacity(allocator, bytes.len);
+        var decoded: std.ArrayList(u8) = try .initCapacity(allocator, bytes.len);
         defer decoded.deinit(allocator);
 
         c.br_pem_decoder_setdest(&p_ctx, struct {
             fn decoder(ctx: ?*anyopaque, src: ?*const anyopaque, size: usize) callconv(.c) void {
-                var list: *std.ArrayListUnmanaged(u8) = @ptrCast(@alignCast(ctx.?));
-                const data = @as([*c]const u8, @ptrCast(src.?))[0..size];
+                var list: *std.ArrayList(u8) = @ptrCast(@alignCast(ctx.?));
+                const data = @as([*]const u8, @ptrCast(src.?))[0..size];
                 list.appendSliceAssumeCapacity(data);
             }
         }.decoder, &decoded);

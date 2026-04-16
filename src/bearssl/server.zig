@@ -1,6 +1,7 @@
 const std = @import("std");
 const assert = std.debug.assert;
 
+const c = @import("bearssl_h");
 const tardy = @import("tardy");
 const Socket = tardy.Socket;
 const Runtime = tardy.Runtime;
@@ -11,10 +12,6 @@ const PrivateKey = BearSSL.PrivateKey;
 const EngineStatus = @import("lib.zig").EngineStatus;
 
 const log = std.log.scoped(.@"bearssl/server");
-
-const c = @cImport({
-    @cInclude("bearssl.h");
-});
 
 pub fn to_secure_socket_server(self: *BearSSL, socket: Socket) !SecureSocket {
     const CallbackContext = struct { socket: Socket, runtime: ?*Runtime };
@@ -48,16 +45,16 @@ pub fn to_secure_socket_server(self: *BearSSL, socket: Socket) !SecureSocket {
     switch (self.pkey.?) {
         .rsa => |*inner| c.br_ssl_server_init_full_rsa(
             &context.context,
-            &self.x509.?,
+            @ptrCast(&self.x509.?),
             1,
-            inner,
+            @ptrCast(inner),
         ),
         .ec => |*inner| c.br_ssl_server_init_full_ec(
             &context.context,
-            &self.x509.?,
+            @ptrCast(&self.x509.?),
             1,
             @intCast(self.cert_signer_algo.?),
-            inner,
+            @ptrCast(inner),
         ),
     }
 
@@ -72,7 +69,7 @@ pub fn to_secure_socket_server(self: *BearSSL, socket: Socket) !SecureSocket {
             fn recv_cb(i: ?*anyopaque, b: [*c]u8, l: usize) callconv(.c) c_int {
                 const ctx: *CallbackContext = @ptrCast(@alignCast(i.?));
                 const len = ctx.socket.recv(ctx.runtime.?, b[0..l]) catch |e| {
-                    log.err("sslio recv cb failed: {s}", .{@errorName(e)});
+                    log.err("sslio recv cb failed: {t}", .{e});
                     return -1;
                 };
                 return @intCast(len);
@@ -83,7 +80,7 @@ pub fn to_secure_socket_server(self: *BearSSL, socket: Socket) !SecureSocket {
             fn send_cb(i: ?*anyopaque, b: [*c]const u8, l: usize) callconv(.c) c_int {
                 const ctx: *CallbackContext = @ptrCast(@alignCast(i.?));
                 const len = ctx.socket.send(ctx.runtime.?, b[0..l]) catch |e| {
-                    log.err("sslio send cb failed: {s}", .{@errorName(e)});
+                    log.err("sslio send cb failed: {t}", .{e});
                     return -1;
                 };
                 return @intCast(len);
@@ -92,7 +89,7 @@ pub fn to_secure_socket_server(self: *BearSSL, socket: Socket) !SecureSocket {
         cb_ctx,
     );
 
-    return SecureSocket{
+    return .{
         .socket = socket,
         .vtable = .{
             .inner = context,
@@ -132,11 +129,11 @@ pub fn to_secure_socket_server(self: *BearSSL, socket: Socket) !SecureSocket {
 
                     const result = c.br_sslio_read(&ctx.sslio_ctx, b.ptr, b.len);
                     if (result < 0) {
-                        const last_error = EngineStatus.convert(c.br_ssl_engine_last_error(&ctx.context.eng));
+                        const last_error: EngineStatus = .convert(c.br_ssl_engine_last_error(&ctx.context.eng));
                         switch (last_error) {
                             .InputOutput => return error.Closed,
                             else => {
-                                log.err("sslio recv failed: {s}", .{@tagName(last_error)});
+                                log.err("sslio recv failed: {t}", .{last_error});
                                 return error.TlsRecvFailed;
                             },
                         }
@@ -152,11 +149,11 @@ pub fn to_secure_socket_server(self: *BearSSL, socket: Socket) !SecureSocket {
 
                     const write_result = c.br_sslio_write(&ctx.sslio_ctx, b.ptr, b.len);
                     if (write_result < 0) {
-                        const last_error = EngineStatus.convert(c.br_ssl_engine_last_error(&ctx.context.eng));
+                        const last_error: EngineStatus = .convert(c.br_ssl_engine_last_error(&ctx.context.eng));
                         switch (last_error) {
                             .InputOutput => return error.Closed,
                             else => {
-                                log.err("sslio send failed: {s}", .{@tagName(last_error)});
+                                log.err("sslio send failed: {t}", .{last_error});
                                 return error.TlsSendFailed;
                             },
                         }
@@ -165,11 +162,11 @@ pub fn to_secure_socket_server(self: *BearSSL, socket: Socket) !SecureSocket {
                     // Force flush. We should be buffering a layer above this.
                     const flush_result = c.br_sslio_flush(&ctx.sslio_ctx);
                     if (flush_result < 0) {
-                        const last_error = EngineStatus.convert(c.br_ssl_engine_last_error(&ctx.context.eng));
+                        const last_error: EngineStatus = .convert(c.br_ssl_engine_last_error(&ctx.context.eng));
                         switch (last_error) {
                             .InputOutput => return error.Closed,
                             else => {
-                                log.err("sslio flush failed: {s}", .{@tagName(last_error)});
+                                log.err("sslio flush failed: {t}", .{last_error});
                                 return error.TlsSendFailed;
                             },
                         }

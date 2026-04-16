@@ -2,13 +2,20 @@
     .name = .secsock,
     .fingerprint = 0x68f68567adae4aa7,
     .version = "0.0.0",
-
+    .minimum_zig_version = "0.15.2",
     .dependencies = .{
-        .tardy = .{
-            .url = "git+https://github.com/tardy-org/tardy?ref=v0.3.0#cd454060f3b6006368d53c05ab96cd16c73c34de",
-            .hash = "tardy-0.3.0-69wrgi7PAwDFhO7m0aXae6N15s2b28VIOrnRrSHHake6",
+        .bearssl = .{
+            .path = "vendor/bearssl",
+            .lazy = true,
         },
-        .bearssl = .{ .path = "vendor/bearssl" },
+        .s2n_tls = .{
+            .path = "vendor/s2n-tls",
+            .lazy = true,
+        },
+        .tardy = .{
+            .url = "git+https://github.com/tardy-org/tardy?ref=v0.3.0#26cbc3cab7993b04e6447471eb523b21376d7dee",
+            .hash = "tardy-0.3.0-69wrgn77AwDLFqiryrDCuNl-q7xF9VEUdONc7ytrNvsM",
+        },
     },
     .paths = .{
         "build.zig",

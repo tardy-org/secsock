@@ -6,11 +6,9 @@ const Runtime = tardy.Runtime;
 
 const SecureSocket = @import("lib.zig").SecureSocket;
 
-const log = std.log.scoped(.s2n);
+const c = @import("s2n_h");
 
-const c = @cImport({
-    @cInclude("s2n.h");
-});
+const log = std.log.scoped(.s2n);
 
 var initalized: bool = false;
 var deinitalized: bool = false;
@@ -106,7 +104,7 @@ pub const s2n = struct {
         try handle_error("setting send cb ctx", set_send_ctx_rc);
 
         const set_recv_cb_rc = c.s2n_connection_set_recv_cb(conn, struct {
-            fn recv_cb(context: ?*anyopaque, buf: [*c]u8, len: u32) callconv(.C) c_int {
+            fn recv_cb(context: ?*anyopaque, buf: [*c]u8, len: u32) callconv(.c) c_int {
                 const ctx: *CallbackContext = @ptrCast(@alignCast(context.?));
                 const sock = ctx.socket;
                 const runtime = ctx.runtime;
@@ -115,7 +113,7 @@ pub const s2n = struct {
                     error.Closed => return 0,
                     // TODO: Properly handle errors.
                     else => {
-                        log.err("error on recv: {s}", .{@errorName(e)});
+                        log.err("error on recv: {t}", .{e});
                         return c.S2N_FAILURE;
                     },
                 };
@@ -126,7 +124,7 @@ pub const s2n = struct {
         try handle_error("setting recv cb", set_recv_cb_rc);
 
         const set_send_cb_rc = c.s2n_connection_set_send_cb(conn, struct {
-            fn send_cb(context: ?*anyopaque, buf: [*c]const u8, len: u32) callconv(.C) c_int {
+            fn send_cb(context: ?*anyopaque, buf: [*c]const u8, len: u32) callconv(.c) c_int {
                 const ctx: *CallbackContext = @ptrCast(@alignCast(context.?));
                 const sock = ctx.socket;
                 const runtime = ctx.runtime;
@@ -138,7 +136,7 @@ pub const s2n = struct {
                     },
                     // TODO: Properly handle errors.
                     else => {
-                        log.err("error on send: {s}", .{@errorName(e)});
+                        log.err("error on send: {t}", .{e});
                         return c.S2N_FAILURE;
                     },
                 };
@@ -151,7 +149,7 @@ pub const s2n = struct {
         const vtable_ctx = try self.allocator.create(VtableContext);
         vtable_ctx.* = .{ .allocator = self.allocator, .s2n = self, .conn = conn.?, .cb_ctx = cb_ctx };
 
-        return SecureSocket{
+        return .{
             .socket = socket,
             .vtable = .{
                 .inner = vtable_ctx,

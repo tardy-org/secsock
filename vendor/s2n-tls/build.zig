@@ -9,11 +9,49 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    const lib = b.addStaticLibrary(.{
-        .name = "s2n",
+    const mod = b.createModule(.{
         .target = target,
         .optimize = optimize,
         .link_libc = true,
+    });
+    mod.addCSourceFiles(.{
+        .root = upstream.path("utils/"),
+        .files = utils_src,
+    });
+
+    mod.addCSourceFiles(.{
+        .root = upstream.path("error/"),
+        .files = error_src,
+    });
+
+    mod.addCSourceFiles(.{
+        .root = upstream.path("stuffer/"),
+        .files = stuffer_src,
+    });
+
+    mod.addCSourceFiles(.{
+        .root = upstream.path("crypto/"),
+        .files = crypto_src,
+    });
+
+    mod.addCSourceFiles(.{
+        .root = upstream.path("tls/"),
+        .flags = &.{ "-include", upstream.path("utils/s2n_prelude.h").getPath(b) },
+        .files = tls_src,
+    });
+
+    mod.addCSourceFiles(.{
+        .root = upstream.path("tls/extensions/"),
+        .files = tls_extensions_src,
+    });
+
+    mod.addIncludePath(upstream.path("./"));
+    mod.addIncludePath(upstream.path("api/"));
+
+    const lib = b.addLibrary(.{
+        .name = "s2n",
+        .linkage = .static,
+        .root_module = mod,
     });
 
     if (lib.rootModuleTarget().os.tag == .linux) {
@@ -29,39 +67,6 @@ pub fn build(b: *std.Build) void {
         lib.linkSystemLibrary("crypto");
     }
 
-    lib.addCSourceFiles(.{
-        .root = upstream.path("utils/"),
-        .files = utils_src,
-    });
-
-    lib.addCSourceFiles(.{
-        .root = upstream.path("error/"),
-        .files = error_src,
-    });
-
-    lib.addCSourceFiles(.{
-        .root = upstream.path("stuffer/"),
-        .files = stuffer_src,
-    });
-
-    lib.addCSourceFiles(.{
-        .root = upstream.path("crypto/"),
-        .files = crypto_src,
-    });
-
-    lib.addCSourceFiles(.{
-        .root = upstream.path("tls/"),
-        .flags = &.{ "-include", upstream.path("utils/s2n_prelude.h").getPath(b) },
-        .files = tls_src,
-    });
-
-    lib.addCSourceFiles(.{
-        .root = upstream.path("tls/extensions/"),
-        .files = tls_extensions_src,
-    });
-
-    lib.addIncludePath(upstream.path("./"));
-    lib.addIncludePath(upstream.path("api/"));
     lib.installHeader(upstream.path("api/s2n.h"), "s2n.h");
 
     b.installArtifact(lib);
@@ -80,7 +85,6 @@ const utils_src = &.{
     "s2n_random.c",
     "s2n_rfc5952.c",
     "s2n_safety.c",
-    "s2n_set.c",
     "s2n_socket.c",
     "s2n_timer.c",
 };
@@ -90,8 +94,8 @@ const error_src = &.{
 };
 
 const stuffer_src = &.{
-    "s2n_stuffer_base64.c",
     "s2n_stuffer.c",
+    "s2n_stuffer_base64.c",
     "s2n_stuffer_file.c",
     "s2n_stuffer_hex.c",
     "s2n_stuffer_network_order.c",
@@ -111,9 +115,7 @@ const crypto_src = &.{
     "s2n_dhe.c",
     "s2n_drbg.c",
     "s2n_ecc_evp.c",
-    "s2n_ecdsa.c",
     "s2n_evp_kem.c",
-    "s2n_evp_signing.c",
     "s2n_fips.c",
     "s2n_fips_rules.c",
     "s2n_hash.c",
@@ -121,12 +123,13 @@ const crypto_src = &.{
     "s2n_hmac.c",
     "s2n_libcrypto.c",
     "s2n_locking.c",
+    "s2n_mldsa.c",
     "s2n_openssl_x509.c",
     "s2n_pkey.c",
+    "s2n_pkey_evp.c",
     "s2n_pq.c",
-    "s2n_rsa.c",
+    "s2n_prf_libcrypto.c",
     "s2n_rsa_pss.c",
-    "s2n_rsa_signing.c",
     "s2n_sequence.c",
     "s2n_stream_cipher_null.c",
     "s2n_stream_cipher_rc4.c",
@@ -181,8 +184,8 @@ const tls_src = &.{
     "s2n_protocol_preferences.c",
     "s2n_psk.c",
     "s2n_quic_support.c",
-    "s2n_record_read_aead.c",
     "s2n_record_read.c",
+    "s2n_record_read_aead.c",
     "s2n_record_read_cbc.c",
     "s2n_record_read_composite.c",
     "s2n_record_read_stream.c",
@@ -205,12 +208,12 @@ const tls_src = &.{
     "s2n_shutdown.c",
     "s2n_signature_algorithms.c",
     "s2n_signature_scheme.c",
+    "s2n_tls.c",
     "s2n_tls13.c",
     "s2n_tls13_certificate_verify.c",
     "s2n_tls13_handshake.c",
     "s2n_tls13_key_schedule.c",
     "s2n_tls13_secrets.c",
-    "s2n_tls.c",
     "s2n_x509_validator.c",
 };
 

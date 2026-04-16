@@ -2,7 +2,7 @@
     .name = .bearssl,
     .fingerprint = 0xaab9fbfee0b0174a,
     .version = "0.6.0",
-    .minimum_zig_version = "0.14.0",
+    .minimum_zig_version = "0.15.2",
     .dependencies = .{
         .bearssl = .{
             .url = "https://bearssl.org/bearssl-0.6.tar.gz",

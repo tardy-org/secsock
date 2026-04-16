@@ -1,4 +1,4 @@
-# secsock 
+# secsock
 
 This is an implementation of `SecureSocket`, a wrapper for the Tardy `Socket` type that provides TLS functionality.
 
@@ -7,13 +7,13 @@ This is an implementation of `SecureSocket`, a wrapper for the Tardy `Socket` ty
 - [s2n-tls](https://github.com/aws/s2n-tls): An implementation of SSL/TLS protocols by AWS. (Experimental)
 
 ## Installing
-Compatible Zig Version: `0.14.0`
+Compatible Zig Version: `0.15.2`
 
-Compatible [tardy](https://github.com/tardy-org/tardy) Version: `v0.3.0`
+Compatible [tardy](https://github.com/tardy-org/tardy) Version: `v0.3.1`
 
-Latest Release: `0.1.0`
+Latest Release: `0.1.1`
 ```
-zig fetch --save git+https://github.com/tardy-org/secsock#v0.1.0
+zig fetch --save git+https://github.com/tardy-org/secsock#v0.1.1
 ```
 
 You can then add the dependency in your `build.zig` file:
@@ -31,7 +31,7 @@ We use Nix Flakes for managing the development environment. Nix Flakes provide a
 
 ### Prerequisites
  - Install [Nix](https://nixos.org/download/)
-```bash 
+```bash
 sh <(curl -L https://nixos.org/nix/install) --daemon
 ```
  - Enable [Flake support](https://nixos.wiki/wiki/Flakes) in your Nix config (`~/.config/nix/nix.conf`): `experimental-features = nix-command flakes`
@@ -57,4 +57,3 @@ Once you are inside of the development shell, you can update the development dep
 
 ### License
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in secsock by you, shall be licensed as MPL2.0, without any additional terms or conditions.
-

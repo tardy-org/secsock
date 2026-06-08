@@ -5,12 +5,12 @@
     .minimum_zig_version = "0.15.2",
     .dependencies = .{
         .s2n_tls = .{
-            .url = "https://github.com/aws/s2n-tls/archive/refs/tags/v1.5.25.tar.gz",
-            .hash = "N-V-__8AAFxUUgFN1iHcWzX2mFWuPIlIe3HSO13j3NRwkAKd",
+            .url = "https://github.com/aws/s2n-tls/archive/refs/tags/v1.7.3.tar.gz",
+            .hash = "N-V-__8AANbWTQEm5AZ9wfcfgKj02jRiFd4LHkK2SdHvTPcE",
         },
         .openssl = .{
-            .url = "git+https://github.com/allyourcodebase/openssl?ref=3.3.2#cad7ccba47e42fa608ca655ec14ae33202df86e1",
-            .hash = "openssl-3.3.2-TC9C3Wa3ZACgB1hZbrLOQCK9XccIBaW_F3imFfIeYP06",
+            .url = "git+https://github.com/allyourcodebase/openssl?ref=3.3.2#6b318b447c8ff7529e3a2337a1df2a9b4816fee2",
+            .hash = "openssl-3.3.2-TC9C3Ze3ZABaKR5hc8KRnRPhTClKrKQKqTnXTUYkvmSR",
         },
     },
     .paths = .{

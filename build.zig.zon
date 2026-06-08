@@ -13,8 +13,8 @@
             .lazy = true,
         },
         .tardy = .{
-            .url = "https://github.com/tardy-org/tardy/archive/73063ad818ba438920723cf022d08c017a0f632b.tar.gz",
-            .hash = "tardy-0.3.1-69wrgo-7BQA-E-96tVbBMroXF-ss_gM6GLu8cuRl8Tcf",
+            .url = "https://github.com/tardy-org/tardy/archive/8284a3fcd7843e5e15f31a46cc70956d95a48100.tar.gz",
+            .hash = "tardy-0.3.1-69wrgh68BQDNSyDZNQagPSGQ2MO7O3XOTTq1MZbADWYl",
         },
     },
     .paths = .{

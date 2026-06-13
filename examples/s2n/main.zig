@@ -10,17 +10,13 @@ const log = std.log.scoped(.@"examples/s2n");
 const Tardy = @import("tardy").Tardy(.auto);
 
 // curl -vk https://127.0.0.1:9862
-pub fn main() !void {
-    var gpa: std.heap.DebugAllocator(.{}) = .init;
-    const allocator = gpa.allocator();
-    defer _ = gpa.deinit();
-
-    var tardy: Tardy = try .init(allocator, .{ .threading = .single });
+pub fn main(init: std.process.Init) !void {
+    var tardy: Tardy = try .init(init.gpa, init.io, .{ .threading = .single });
     defer tardy.deinit();
 
     // ideally, this is the pattern we can utilize where the
     // tls vendor is initialized outside of tardy and shared internally.
-    var s2n = try secsock.s2n.init(allocator);
+    var s2n = try secsock.s2n.init(init.gpa);
     defer s2n.deinit();
     try s2n.add_cert_chain(@embedFile("cert.pem"), @embedFile("key.pem"));
 
@@ -32,12 +28,12 @@ pub fn main() !void {
 }
 
 fn echo_frame(rt: *Runtime, s2n: *secsock.s2n) !void {
-    const socket: Socket = try .init(.{ .tcp = .{ .host = "127.0.0.1", .port = 9862 } });
+    const socket: Socket = try .init(rt.io, .{ .tcp = .{ .host = "127.0.0.1", .port = 9862 } });
     defer socket.close_blocking();
     try socket.bind();
     try socket.listen(128);
 
-    const secure = try s2n.to_secure_socket(socket, .server);
+    const secure = try s2n.to_secure_socket(rt.io, socket, .server);
     defer secure.deinit();
 
     const connected = try secure.accept(rt);

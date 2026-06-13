@@ -28,7 +28,7 @@ pub const s2n = struct {
     config: *c.s2n_config,
     cert: ?*c.s2n_cert_chain_and_key,
     // TODO: This needs to go.
-    lock: std.Thread.Mutex = .{},
+    lock: std.Io.Mutex = .init,
 
     fn handle_error(state: []const u8, rc: c_int) !void {
         if (rc < 0) {
@@ -76,9 +76,9 @@ pub const s2n = struct {
         _ = c.s2n_cleanup();
     }
 
-    pub fn to_secure_socket(self: *s2n, socket: Socket, mode: SecureSocket.Mode) !SecureSocket {
-        self.lock.lock();
-        defer self.lock.unlock();
+    pub fn to_secure_socket(self: *s2n, io: std.Io, socket: Socket, mode: SecureSocket.Mode) !SecureSocket {
+        self.lock.lockUncancelable(io);
+        defer self.lock.unlock(io);
 
         const conn = c.s2n_connection_new(switch (mode) {
             .client => c.S2N_CLIENT,
@@ -172,7 +172,7 @@ pub const s2n = struct {
                         const sock = try s.accept(r);
                         errdefer sock.close_blocking();
 
-                        const child = try ctx.s2n.to_secure_socket(sock, .server);
+                        const child = try ctx.s2n.to_secure_socket(r.io, sock, .server);
                         // if we fail, we want to clean this connection up.
                         errdefer child.deinit();
                         const new_ctx: *VtableContext = @ptrCast(@alignCast(child.vtable.inner));

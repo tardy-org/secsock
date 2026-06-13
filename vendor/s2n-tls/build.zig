@@ -14,9 +14,10 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .link_libc = true,
     });
+
     mod.addCSourceFiles(.{
-        .root = upstream.path("utils/"),
-        .files = utils_src,
+        .root = upstream.path("crypto/"),
+        .files = crypto_src,
     });
 
     mod.addCSourceFiles(.{
@@ -30,11 +31,6 @@ pub fn build(b: *std.Build) void {
     });
 
     mod.addCSourceFiles(.{
-        .root = upstream.path("crypto/"),
-        .files = crypto_src,
-    });
-
-    mod.addCSourceFiles(.{
         .root = upstream.path("tls/"),
         .flags = &.{ "-include", upstream.path("utils/s2n_prelude.h").getPath(b) },
         .files = tls_src,
@@ -45,7 +41,19 @@ pub fn build(b: *std.Build) void {
         .files = tls_extensions_src,
     });
 
+    mod.addCSourceFiles(.{
+        .root = upstream.path("tls/policy/"),
+        .files = tls_policy_src,
+    });
+
+    mod.addCSourceFiles(.{
+        .root = upstream.path("utils/"),
+        .files = utils_src,
+    });
+
     mod.addIncludePath(upstream.path("./"));
+    // temporaryly vendoring s2n.h because translate-c doesn't understand
+    // __thread now
     mod.addIncludePath(upstream.path("api/"));
 
     const lib = b.addLibrary(.{
@@ -60,11 +68,11 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
         });
 
-        lib.linkLibrary(openssl.artifact("openssl"));
+        mod.linkLibrary(openssl.artifact("openssl"));
     } else {
         std.debug.print("On non-Linux platforms, you must provide libssl and libcrypto installed on system.", .{});
-        lib.linkSystemLibrary("ssl");
-        lib.linkSystemLibrary("crypto");
+        mod.linkSystemLibrary("ssl", .{});
+        mod.linkSystemLibrary("crypto", .{});
     }
 
     lib.installHeader(upstream.path("api/s2n.h"), "s2n.h");
@@ -72,38 +80,7 @@ pub fn build(b: *std.Build) void {
     b.installArtifact(lib);
 }
 
-const utils_src = &.{
-    "s2n_array.c",
-    "s2n_atomic.c",
-    "s2n_blob.c",
-    "s2n_ensure.c",
-    "s2n_fork_detection.c",
-    "s2n_init.c",
-    "s2n_io.c",
-    "s2n_map.c",
-    "s2n_mem.c",
-    "s2n_random.c",
-    "s2n_rfc5952.c",
-    "s2n_safety.c",
-    "s2n_socket.c",
-    "s2n_timer.c",
-};
-
-const error_src = &.{
-    "s2n_errno.c",
-};
-
-const stuffer_src = &.{
-    "s2n_stuffer.c",
-    "s2n_stuffer_base64.c",
-    "s2n_stuffer_file.c",
-    "s2n_stuffer_hex.c",
-    "s2n_stuffer_network_order.c",
-    "s2n_stuffer_pem.c",
-    "s2n_stuffer_text.c",
-};
-
-const crypto_src = &.{
+const crypto_src: []const []const u8 = &.{
     "s2n_aead_cipher_aes_gcm.c",
     "s2n_aead_cipher_chacha20_poly1305.c",
     "s2n_cbc_cipher_3des.c",
@@ -113,7 +90,6 @@ const crypto_src = &.{
     "s2n_composite_cipher_aes_sha.c",
     "s2n_crypto.c",
     "s2n_dhe.c",
-    "s2n_drbg.c",
     "s2n_ecc_evp.c",
     "s2n_evp_kem.c",
     "s2n_fips.c",
@@ -136,9 +112,24 @@ const crypto_src = &.{
     "s2n_tls13_keys.c",
 };
 
-const tls_src = &.{
+const error_src: []const []const u8 = &.{
+    "s2n_errno.c",
+};
+
+const stuffer_src: []const []const u8 = &.{
+    "s2n_stuffer.c",
+    "s2n_stuffer_base64.c",
+    "s2n_stuffer_file.c",
+    "s2n_stuffer_hex.c",
+    "s2n_stuffer_network_order.c",
+    "s2n_stuffer_pem.c",
+    "s2n_stuffer_text.c",
+};
+
+const tls_src: []const []const u8 = &.{
     "s2n_aead.c",
     "s2n_alerts.c",
+    "s2n_async_offload.c",
     "s2n_async_pkey.c",
     "s2n_auth_selection.c",
     "s2n_cbc.c",
@@ -208,6 +199,7 @@ const tls_src = &.{
     "s2n_shutdown.c",
     "s2n_signature_algorithms.c",
     "s2n_signature_scheme.c",
+    "s2n_supported_group_preferences.c",
     "s2n_tls.c",
     "s2n_tls13.c",
     "s2n_tls13_certificate_verify.c",
@@ -217,7 +209,7 @@ const tls_src = &.{
     "s2n_x509_validator.c",
 };
 
-const tls_extensions_src = &.{
+const tls_extensions_src: []const []const u8 = &.{
     "s2n_cert_authorities.c",
     "s2n_cert_status.c",
     "s2n_cert_status_response.c",
@@ -261,4 +253,26 @@ const tls_extensions_src = &.{
     "s2n_server_signature_algorithms.c",
     "s2n_server_supported_versions.c",
     "s2n_supported_versions.c",
+};
+
+const tls_policy_src: []const []const u8 = &.{
+    "s2n_policy_defaults.c",
+    "s2n_policy_writer.c",
+};
+
+const utils_src: []const []const u8 = &.{
+    "s2n_array.c",
+    "s2n_atomic.c",
+    "s2n_blob.c",
+    "s2n_ensure.c",
+    "s2n_events.c",
+    "s2n_init.c",
+    "s2n_io.c",
+    "s2n_map.c",
+    "s2n_mem.c",
+    "s2n_random.c",
+    "s2n_rfc5952.c",
+    "s2n_safety.c",
+    "s2n_socket.c",
+    "s2n_timer.c",
 };

@@ -11,15 +11,11 @@ const Tardy = @import("tardy").Tardy(.auto);
 const log = std.log.scoped(.@"examples/bearssl");
 
 // curl -vk https://127.0.0.1:9862
-pub fn main() !void {
-    var gpa: std.heap.DebugAllocator(.{}) = .init;
-    const allocator = gpa.allocator();
-    defer _ = gpa.deinit();
-
-    var tardy: Tardy = try .init(allocator, .{ .threading = .single });
+pub fn main(init: std.process.Init) !void {
+    var tardy: Tardy = try .init(init.gpa, init.io, .{ .threading = .single });
     defer tardy.deinit();
 
-    var bearssl: secsock.BearSSL = .init(allocator);
+    var bearssl: secsock.BearSSL = .init(init.gpa);
     defer bearssl.deinit();
 
     // try bearssl.add_cert_chain(
@@ -36,7 +32,7 @@ pub fn main() !void {
         @embedFile("certs/rsa_key.pem"),
     );
 
-    const socket: Socket = try .init(.{ .tcp = .{ .host = "127.0.0.1", .port = 9862 } });
+    const socket: Socket = try .init(init.io, .{ .tcp = .{ .host = "127.0.0.1", .port = 9862 } });
     defer socket.close_blocking();
     try socket.bind();
     try socket.listen(128);

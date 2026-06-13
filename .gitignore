@@ -1,2 +1,4 @@
 .zig-cache
 zig-out
+zig-pkg/*
+!zig-pkg/N-V-__8AANbWTQEm5AZ9wfcfgKj02jRiFd4LHkK2SdHvTPcE/

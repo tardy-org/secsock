@@ -1,7 +1,7 @@
 .{
     .name = .secsock,
     .fingerprint = 0x68f68567adae4aa7,
-    .version = "0.1.1",
+    .version = "0.1.2",
     .minimum_zig_version = "0.16.0",
     .dependencies = .{
         .bearssl = .{
@@ -13,8 +13,8 @@
             .lazy = true,
         },
         .tardy = .{
-            .url = "https://github.com/tardy-org/tardy/archive/8284a3fcd7843e5e15f31a46cc70956d95a48100.tar.gz",
-            .hash = "tardy-0.3.1-69wrgh68BQDNSyDZNQagPSGQ2MO7O3XOTTq1MZbADWYl",
+            .url = "https://github.com/tardy-org/tardy/archive/refs/tags/v0.3.2.tar.gz",
+            .hash = "tardy-0.3.2-69wrgkTEBQCi4u4sNr63s5V2TzHXw3iLkkiGXVMGhupi",
         },
     },
     .paths = .{

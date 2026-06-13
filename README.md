@@ -9,11 +9,11 @@ This is an implementation of `SecureSocket`, a wrapper for the Tardy `Socket` ty
 ## Installing
 Compatible Zig Version: `0.16.0`
 
-Compatible [tardy](https://github.com/tardy-org/tardy) Version: `v0.3.1`
+Compatible [tardy](https://github.com/tardy-org/tardy) Version: `v0.3.2`
 
-Latest Release: `0.1.1`
+Latest Release: `0.1.2`
 ```
-zig fetch --save git+https://github.com/tardy-org/secsock#v0.1.1
+zig fetch --save git+https://github.com/tardy-org/secsock#v0.1.2
 ```
 
 You can then add the dependency in your `build.zig` file:

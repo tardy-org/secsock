@@ -30,9 +30,18 @@ pub fn build(b: *std.Build) void {
         .files = stuffer_src,
     });
 
+    // FIXME(bernardassan): https://codeberg.org/ziglang/zig/issues/30718
+    // A dirty hack to be able to use `-include` for now till the build
+    // system supports it
+    const s2n_hash = @import("build.zig.zon").dependencies.s2n_tls.hash;
+    const s2n_prelude_h = std.fmt.allocPrint(b.allocator, "{[cwd]s}/zig-pkg/{[s2n_hash]s}/utils/s2n_prelude.h", .{
+        .cwd = b.root.toString(b.allocator) catch unreachable,
+        .s2n_hash = s2n_hash,
+    }) catch unreachable;
+
     mod.addCSourceFiles(.{
         .root = upstream.path("tls/"),
-        .flags = &.{ "-include", upstream.path("utils/s2n_prelude.h").getPath(b) },
+        .flags = &.{ "-include", s2n_prelude_h },
         .files = tls_src,
     });
 

@@ -10,7 +10,7 @@ This is an implementation of `SecureSocket`, a wrapper for the Tardy `Socket` ty
 
 ## Installing
 
-For in development secsock which uses [tardy/main](https://github.com/tardy-org/tardy/tree/main/) and Zig `0.17.0-dev.1413+addc3c3b8`
+For in development secsock which uses [tardy/main](https://github.com/tardy-org/tardy/tree/main/) and Zig `0.17.0-dev.2248+3f6a02acd`
 
 ```elvish
 zig fetch --save 'git+https://github.com/tardy-org/secsock?ref=main#commit_hash'

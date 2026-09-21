@@ -260,11 +260,11 @@ const Callback = struct {
         const sock = cb.socket;
         const runtime = cb.runtime;
 
-        const result = sock.recv(runtime.?, buf[0..len]) catch |e|
-            switch (e) {
+        const result = sock.recv(runtime.?, buf[0..len]) catch |err|
+            switch (err) {
                 error.Closed => return 0,
                 // TODO: Properly handle errors.
-                else => {
+                else => |e| {
                     log.err("error on recv: {t}", .{e});
                     return h.S2N_FAILURE;
                 },
@@ -278,14 +278,14 @@ const Callback = struct {
         const sock = cb.socket;
         const runtime = cb.runtime;
 
-        const result = sock.send(runtime.?, buf[0..len]) catch |e|
-            switch (e) {
+        const result = sock.send(runtime.?, buf[0..len]) catch |err|
+            switch (err) {
                 error.Closed => {
                     h.s2n_errno_location().* = h.S2N_ERR_T_CLOSED;
                     return h.S2N_FAILURE;
                 },
                 // TODO: Properly handle errors.
-                else => {
+                else => |e| {
                     log.err("error on send: {t}", .{e});
                     return h.S2N_FAILURE;
                 },

@@ -133,9 +133,9 @@ const Impl = struct {
             );
             switch (last_error) {
                 .InputOutput => return error.Closed,
-                else => {
+                else => |err| {
                     log.err("sslio recv failed: {t}", .{
-                        last_error,
+                        err,
                     });
                     return error.TlsRecvFailed;
                 },
@@ -160,8 +160,8 @@ const Impl = struct {
             );
             switch (last_error) {
                 .InputOutput => return error.Closed,
-                else => {
-                    log.err("sslio send failed: {t}", .{last_error});
+                else => |err| {
+                    log.err("sslio send failed: {t}", .{err});
                     return error.TlsSendFailed;
                 },
             }
@@ -175,9 +175,9 @@ const Impl = struct {
             );
             switch (last_error) {
                 .InputOutput => return error.Closed,
-                else => {
+                else => |err| {
                     log.err("sslio flush failed: {t}", .{
-                        last_error,
+                        err,
                     });
                     return error.TlsSendFailed;
                 },

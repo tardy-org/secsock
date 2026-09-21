@@ -74,6 +74,12 @@ const Impl = struct {
         errdefer r.gpa.destroy(client);
         errdefer client.close_blocking();
 
+        // We only support unix domain on http
+        switch (Secsock.snifProtocol(client)) {
+            .https => return error.TlsUnSupported,
+            else => {},
+        }
+
         const new_unix = try unixWithSock(r.gpa, client);
         errdefer new_unix.deinit(r.gpa);
 

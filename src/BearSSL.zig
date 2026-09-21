@@ -226,7 +226,7 @@ pub fn tlsWithSock(
     gpa: mem.Allocator,
     socket: *const Socket,
     mode: Socket.Mode,
-) !Secsock {
+) (OoM || error{ServerResetFailed})!Secsock {
     switch (mode) {
         .client => @panic("Client bearssl not supported yet!"),
         .server => {
@@ -337,6 +337,7 @@ pub const PrivateKey = union(enum) {
 
 const std = @import("std");
 const mem = std.mem;
+const OoM = mem.Allocator.Error;
 
 pub const h = @import("bearssl.h");
 const tardy = @import("tardy");

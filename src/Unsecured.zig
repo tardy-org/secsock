@@ -66,6 +66,11 @@ const Impl = struct {
         errdefer r.gpa.destroy(client);
         errdefer client.close_blocking();
 
+        switch (Secsock.snifProtocol(client)) {
+            .https => return error.TlsUnSupported,
+            else => {},
+        }
+
         const new_tcp = try tcpWithSock(r.gpa, client);
         errdefer new_tcp.deinit(r.gpa);
 

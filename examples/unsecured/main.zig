@@ -1,6 +1,6 @@
 const Tardy = tardy.Tardy(.auto);
 
-/// curl -vk https://127.0.0.1:9862
+/// curl -vk http://127.0.0.1:9862
 pub fn main(init: std.process.Init) !void {
     const unsecured: Secsock.Unsecured = .empty;
 
@@ -39,16 +39,20 @@ fn echo_frame(rt: *tardy.Runtime, tcp: *const Secsock) !void {
     var connected = try tcp.accept(rt);
     defer connected.deinit(rt.gpa);
 
-    while (true) {
-        var buf: [1024]u8 = undefined;
-        const count = connected.recv(rt, &buf) catch |e|
-            if (e == error.Closed) break else return e;
+    var buf: [1024]u8 = undefined;
+    const count = connected.recv(rt, &buf) catch |err|
+        switch (err) {
+            error.Closed => return,
+            else => |e| return e,
+        };
 
-        log.info("recv count: {d}", .{count});
+    log.info("recv count: {d}\ncontent:\n{s}", .{ count, buf[0..count] });
 
-        _ = connected.send(rt, buf[0..count]) catch |e|
-            if (e == error.Closed) break else return e;
-    }
+    _ = connected.send(rt, buf[0..count]) catch |err|
+        switch (err) {
+            error.Closed => return,
+            else => |e| return e,
+        };
 }
 
 const log = std.log.scoped(.@"examples/unsecured");

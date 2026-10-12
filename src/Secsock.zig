@@ -32,11 +32,11 @@ pub fn send_all(tls: *Secsock, rt: *Runtime, buffer: []const u8) !usize {
     var count: usize = 0;
     defer debug.assert(count == buffer.len);
 
-    while (count != buffer.len) {
-        count += tls.send(rt, buffer[count..]) catch |e|
-            switch (e) {
+    while (count < buffer.len) {
+        count += tls.send(rt, buffer[count..]) catch |err|
+            switch (err) {
                 error.Closed => return count,
-                else => return e,
+                else => |e| return e,
             };
     }
 
@@ -52,13 +52,16 @@ const Protocol = enum {
 /// https://github.com/httptoolkit/httpolyglot/blob/89064d5801caf500032461048ceb72884d40d0c4/src/index.ts
 /// https://github.com/mscdex/httpolyglot/issues/3#issuecomment-173680155
 /// https://httptoolkit.com/blog/http-https-same-port/
-pub fn snifProtocol(socket: *const Socket) Protocol {
+pub fn snifProtocol(rt: *Runtime, socket: *const Socket) error{Closed}!Protocol {
     var first_byte: [1]u8 = undefined;
-    const count = tardy.AsyncIO.syscall.recv(
-        socket.handle,
+    const count = socket.recv(
+        rt,
         &first_byte,
         std.posix.MSG.PEEK,
-    ) catch unreachable;
+    ) catch |err| switch (err) {
+        error.Closed => |e| return e,
+        else => unreachable,
+    };
     debug.assert(count == first_byte.len);
 
     const http2_preface = "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n";

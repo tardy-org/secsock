@@ -58,38 +58,41 @@ const Impl = struct {
         gpa.destroy(impl);
     }
 
-    fn accept(ct: *const anyopaque, r: *Runtime) !Secsock {
+    fn accept(ct: *const anyopaque, rt: *Runtime) !Secsock {
         const impl: *const Impl = @ptrCast(@alignCast(ct));
 
-        const client = try r.gpa.create(Socket);
-        client.* = try impl.socket.accept(r);
-        errdefer r.gpa.destroy(client);
+        const client = try rt.gpa.create(Socket);
+        client.* = try impl.socket.accept(rt);
+        errdefer rt.gpa.destroy(client);
         errdefer client.close_blocking();
 
-        switch (Secsock.snifProtocol(client)) {
-            .https => return error.TlsUnSupported,
+        switch (try Secsock.snifProtocol(rt, client)) {
+            .https => {
+                log.warn("socket doesn't support https", .{});
+                return error.HttpsUnsupported;
+            },
             else => {},
         }
 
-        const new_tcp = try tcpWithSock(r.gpa, client);
-        errdefer new_tcp.deinit(r.gpa);
+        const new_tcp = try tcpWithSock(rt.gpa, client);
+        errdefer new_tcp.deinit(rt.gpa);
 
         return new_tcp;
     }
 
-    fn connect(ct: *const anyopaque, r: *Runtime) !void {
+    fn connect(ct: *const anyopaque, rt: *Runtime) !void {
         const impl: *const Impl = @ptrCast(@alignCast(ct));
-        try impl.socket.connect(r);
+        try impl.socket.connect(rt);
     }
 
-    fn recv(ct: *const anyopaque, r: *Runtime, buf: []u8) !usize {
+    fn recv(ct: *const anyopaque, rt: *Runtime, buf: []u8) !usize {
         const impl: *const Impl = @ptrCast(@alignCast(ct));
-        return try impl.socket.recv(r, buf);
+        return try impl.socket.recv(rt, buf, 0);
     }
 
-    fn send(ct: *const anyopaque, r: *Runtime, buf: []const u8) !usize {
+    fn send(ct: *const anyopaque, rt: *Runtime, buf: []const u8) !usize {
         const impl: *const Impl = @ptrCast(@alignCast(ct));
-        return try impl.socket.send(r, buf);
+        return try impl.socket.send(rt, buf);
     }
 };
 
@@ -104,6 +107,7 @@ const vtable: Secsock.VTable = .{
 
 const std = @import("std");
 const mem = std.mem;
+const log = std.log.scoped(.@"Secsock/Unsecured");
 
 const tardy = @import("tardy");
 const Socket = tardy.net.Socket;

@@ -142,8 +142,8 @@ const Impl = struct {
     conn: *h.s2n_connection,
     cb: *Callback,
 
-    fn info(i: *const anyopaque) Secsock.Info {
-        const impl: *const Impl = @ptrCast(@alignCast(i));
+    fn info(ctx: *const anyopaque) Secsock.Info {
+        const impl: *const Impl = @ptrCast(@alignCast(ctx));
 
         var buf: [21:0]u8 = @splat(0x0);
         _ = mem.print(&buf, "{f}", .{
@@ -156,8 +156,8 @@ const Impl = struct {
         };
     }
 
-    fn deinit(i: *const anyopaque, gpa: mem.Allocator) void {
-        const impl: *const Impl = @ptrCast(@alignCast(i));
+    fn deinit(ctx: *const anyopaque, gpa: mem.Allocator) void {
+        const impl: *const Impl = @ptrCast(@alignCast(ctx));
 
         var blocked_status: h.s2n_blocked_status = undefined;
         _ = h.s2n_shutdown(impl.conn, &blocked_status);
@@ -169,23 +169,23 @@ const Impl = struct {
         gpa.destroy(impl);
     }
 
-    fn accept(i: *const anyopaque, r: *Runtime) !Secsock {
-        const impl: *const Impl = @ptrCast(@alignCast(i));
-        impl.cb.runtime = r;
+    fn accept(ctx: *const anyopaque, rt: *Runtime) !Secsock {
+        const impl: *const Impl = @ptrCast(@alignCast(ctx));
+        impl.cb.runtime = rt;
 
-        const client = try impl.cb.socket.accept(r);
+        const client = try impl.cb.socket.accept(rt);
         errdefer client.close_blocking();
 
         const new_s2n = try impl.s2n.tlsWithSock(
-            r.gpa,
+            rt.gpa,
             &client,
             .server,
         );
         // if we fail, we want to clean this connection up.
-        errdefer new_s2n.deinit(r.gpa);
+        errdefer new_s2n.deinit(rt.gpa);
 
         const new_impl: *Impl = @ptrCast(@alignCast(new_s2n.impl));
-        new_impl.cb.runtime = r;
+        new_impl.cb.runtime = rt;
 
         var blocked_status: h.s2n_blocked_status = h.S2N_NOT_BLOCKED;
         while (h.s2n_negotiate(new_impl.conn, &blocked_status) != h.S2N_SUCCESS) {
@@ -202,10 +202,10 @@ const Impl = struct {
         return new_s2n;
     }
 
-    fn connect(i: *const anyopaque, r: *Runtime) !void {
-        const impl: *const Impl = @ptrCast(@alignCast(i));
-        impl.cb.runtime = r;
-        try impl.cb.socket.connect(r);
+    fn connect(ctx: *const anyopaque, rt: *Runtime) !void {
+        const impl: *const Impl = @ptrCast(@alignCast(ctx));
+        impl.cb.runtime = rt;
+        try impl.cb.socket.connect(rt);
 
         var blocked_status: h.s2n_blocked_status = h.S2N_NOT_BLOCKED;
         while (h.s2n_negotiate(impl.conn, &blocked_status) != h.S2N_SUCCESS) {
@@ -220,9 +220,9 @@ const Impl = struct {
         }
     }
 
-    fn recv(i: *anyopaque, r: *Runtime, buf: []u8) !usize {
-        const impl: *Impl = @ptrCast(@alignCast(i));
-        impl.cb.runtime = r;
+    fn recv(ctx: *anyopaque, rt: *Runtime, buf: []u8) !usize {
+        const impl: *Impl = @ptrCast(@alignCast(ctx));
+        impl.cb.runtime = rt;
         var blocked_status: h.s2n_blocked_status = undefined;
 
         const res = h.s2n_recv(impl.conn, buf.ptr, @intCast(buf.len), &blocked_status);
@@ -235,9 +235,9 @@ const Impl = struct {
         return @intCast(res);
     }
 
-    fn send(i: *anyopaque, r: *Runtime, buf: []const u8) !usize {
-        const impl: *Impl = @ptrCast(@alignCast(i));
-        impl.cb.runtime = r;
+    fn send(ctx: *anyopaque, rt: *Runtime, buf: []const u8) !usize {
+        const impl: *Impl = @ptrCast(@alignCast(ctx));
+        impl.cb.runtime = rt;
         var blocked_status: h.s2n_blocked_status = undefined;
 
         const res = h.s2n_send(impl.conn, buf.ptr, @intCast(buf.len), &blocked_status);

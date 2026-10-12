@@ -69,8 +69,8 @@ const Impl = struct {
     cb: *Callback,
     server: h.br_ssl_server_context,
 
-    fn info(i: *const anyopaque) Secsock.Info {
-        const impl: *const Impl = @ptrCast(@alignCast(i));
+    fn info(ctx: *const anyopaque) Secsock.Info {
+        const impl: *const Impl = @ptrCast(@alignCast(ctx));
 
         var buf: [21:0]u8 = @splat(0x0);
         _ = mem.print(&buf, "{f}", .{
@@ -83,8 +83,8 @@ const Impl = struct {
         };
     }
 
-    fn deinit(i: *const anyopaque, gpa: mem.Allocator) void {
-        const impl: *const Impl = @ptrCast(@alignCast(i));
+    fn deinit(ctx: *const anyopaque, gpa: mem.Allocator) void {
+        const impl: *const Impl = @ptrCast(@alignCast(ctx));
 
         impl.cb.socket.close_blocking();
         gpa.destroy(impl.cb.socket);
@@ -94,25 +94,25 @@ const Impl = struct {
         gpa.destroy(impl);
     }
 
-    fn accept(i: *const anyopaque, r: *Runtime) !Secsock {
-        const impl: *const Impl = @ptrCast(@alignCast(i));
+    fn accept(ctx: *const anyopaque, rt: *Runtime) !Secsock {
+        const impl: *const Impl = @ptrCast(@alignCast(ctx));
         const cb = impl.cb;
 
-        const client = r.gpa.create(Socket) catch @panic("OOM");
-        client.* = try cb.socket.accept(r);
-        errdefer r.gpa.destroy(client);
+        const client = rt.gpa.create(Socket) catch @panic("OOM");
+        client.* = try cb.socket.accept(rt);
+        errdefer rt.gpa.destroy(client);
         errdefer client.close_blocking();
 
         const new_bearssl = try impl.bearssl.tlsWithSock(
-            r.gpa,
+            rt.gpa,
             client,
             .server,
         );
         // if we fail, we want to clean this connection up.
-        errdefer new_bearssl.deinit(r.gpa);
+        errdefer new_bearssl.deinit(rt.gpa);
 
         const new_impl: *const Impl = @ptrCast(@alignCast(new_bearssl.impl));
-        new_impl.cb.runtime = r;
+        new_impl.cb.runtime = rt;
 
         return new_bearssl;
     }
@@ -121,11 +121,11 @@ const Impl = struct {
         return error.TLSServerCantConnect;
     }
 
-    fn recv(i: *anyopaque, r: *Runtime, b: []u8) !usize {
-        const impl: *Impl = @ptrCast(@alignCast(i));
-        impl.cb.runtime = r;
+    fn recv(ctx: *anyopaque, rt: *Runtime, buf: []u8) !usize {
+        const impl: *Impl = @ptrCast(@alignCast(ctx));
+        impl.cb.runtime = rt;
 
-        const result = h.br_sslio_read(&impl.sslio, b.ptr, b.len);
+        const result = h.br_sslio_read(&impl.sslio, buf.ptr, buf.len);
 
         if (result < 0) {
             const last_error: EngineStatus = .convert(
@@ -145,14 +145,14 @@ const Impl = struct {
         return @intCast(result);
     }
 
-    fn send(i: *anyopaque, r: *Runtime, b: []const u8) !usize {
-        const impl: *Impl = @ptrCast(@alignCast(i));
-        impl.cb.runtime = r;
+    fn send(ctx: *anyopaque, rt: *Runtime, buf: []const u8) !usize {
+        const impl: *Impl = @ptrCast(@alignCast(ctx));
+        impl.cb.runtime = rt;
 
         const write_result = h.br_sslio_write(
             &impl.sslio,
-            b.ptr,
-            b.len,
+            buf.ptr,
+            buf.len,
         );
         if (write_result < 0) {
             const last_error: EngineStatus = .convert(
@@ -197,6 +197,7 @@ const Callback = struct {
         const count = cb.socket.recv(
             cb.runtime.?,
             buf[0..len],
+            0,
         ) catch |e| {
             log.err("sslio recv cb failed: {t}", .{e});
             return -1;

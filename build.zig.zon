@@ -5,8 +5,8 @@
     .minimum_zig_version = "0.17.0",
     .dependencies = .{
         .tardy = .{
-            .url = "git+https://github.com/tardy-org/tardy?ref=main#d122485dfe53b72dbd85c0166e06f9e7656da02e",
-            .hash = "tardy-0.3.3-dev-69wrglEQBgBm8WhqjPeO64B0VOGf_e2xx6aA78mi8O8X",
+            .url = "git+https://github.com/tardy-org/tardy?ref=main#a68e4a6b3238f58c7aff205e4aa4d25a9e7f13b1",
+            .hash = "tardy-0.3.3-69wrgjsQBgC6hBj40JhhwqQ5SohRQk2t59bEoTf42g2L",
         },
         .bearssl = .{
             .url = "git+https://github.com/tardy-org/bearssl-zig?ref=main#4b3e60ebe99fbf2bd1a38ebbd9e0d7369b7966ea",
@@ -14,8 +14,8 @@
             .lazy = true,
         },
         .s2n_tls = .{
-            .url = "git+https://github.com/tardy-org/s2n-tls-zig?ref=main#f0b319d8cbc011fe020e4f31e1097c1c1144e045",
-            .hash = "s2n_tls-1.7.3-n2nk3GFtAgDUw4loKYhUOkjS8CeyD_SLVrvjce3h5Kgc",
+            .url = "git+https://github.com/tardy-org/s2n-tls-zig?ref=main#83d2cef0c123096975a46062bfccd487c5b0e6fe",
+            .hash = "s2n_tls-1.7.3-n2nk3G0qAAAEJ_mu6tARtt4sfMUUUxyjz4dV5v0wlpsY",
             .lazy = true,
         },
     },

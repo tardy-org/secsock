@@ -260,15 +260,18 @@ const Callback = struct {
         const sock = cb.socket;
         const runtime = cb.runtime;
 
-        const result = sock.recv(runtime.?, buf[0..len]) catch |err|
-            switch (err) {
-                error.Closed => return 0,
-                // TODO: Properly handle errors.
-                else => |e| {
-                    log.err("error on recv: {t}", .{e});
-                    return h.S2N_FAILURE;
-                },
-            };
+        const result = sock.recv(
+            runtime.?,
+            buf[0..len],
+            0,
+        ) catch |err| switch (err) {
+            error.Closed => return 0,
+            // TODO: Properly handle errors.
+            else => |e| {
+                log.err("error on recv: {t}", .{e});
+                return h.S2N_FAILURE;
+            },
+        };
 
         return @intCast(result);
     }
